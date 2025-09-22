@@ -136,21 +136,26 @@ jobs:
         echo "" >> RELEASE_NOTES.md
         echo "🌐 **Live Demo:** https://${{ github.repository_owner }}.github.io/Morpion-Otaku-Battle/" >> RELEASE_NOTES.md
         
-        echo "changelog<<EOF" >> $GITHUB_OUTPUT
-        cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        {
+          echo "changelog<<EOF"
+          cat RELEASE_NOTES.md
+          echo "EOF"
+        } >> $GITHUB_OUTPUT
     
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ steps.version_bump.outputs.new_version }}
-        release_name: 🎮 Morpion Otaku Battle v${{ steps.version_bump.outputs.new_version }}
+        name: 🎮 Morpion Otaku Battle v${{ steps.version_bump.outputs.new_version }}
         body: ${{ steps.changelog.outputs.changelog }}
         draft: false
         prerelease: false
+        files: |
+          morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.zip
+          morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz
     
     - name: Create release assets
       run: |
@@ -158,13 +163,17 @@ jobs:
         mkdir -p release-assets
         
         # Copy game files
-        cp -r view/ release-assets/
-        cp -r model/ release-assets/
-        cp -r controller/ release-assets/
-        cp -r static/ release-assets/
-        cp app.py release-assets/
-        cp requirements.txt release-assets/
-        cp README.md release-assets/
+        cp -r view/ release-assets/ 2>/dev/null || true
+        cp -r model/ release-assets/ 2>/dev/null || true
+        cp -r controller/ release-assets/ 2>/dev/null || true
+        cp -r docs/ release-assets/ 2>/dev/null || true
+        cp -r assets/ release-assets/ 2>/dev/null || true
+        cp *.py release-assets/ 2>/dev/null || true
+        cp *.txt release-assets/ 2>/dev/null || true
+        cp *.md release-assets/ 2>/dev/null || true
+        cp *.css release-assets/ 2>/dev/null || true
+        cp *.jpg release-assets/ 2>/dev/null || true
+        cp *.png release-assets/ 2>/dev/null || true
         cp LICENSE release-assets/ 2>/dev/null || echo "# MIT License" > release-assets/LICENSE
         
         # Create installation script
@@ -194,25 +203,7 @@ jobs:
         tar -czf ../morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz .
         cd ..
     
-    - name: Upload Release Assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.zip
-        asset_name: morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.zip
-        asset_content_type: application/zip
-    
-    - name: Upload Release Assets (tar.gz)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz
-        asset_name: morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz
-        asset_content_type: application/gzip
+
     
     - name: Push changes
       run: |

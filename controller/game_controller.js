@@ -52,7 +52,7 @@ class GameController {
         const preview = document.getElementById(previewId);
         if (character) {
             const img = document.createElement('img');
-            img.src = '../' + character + '.jpg';
+            img.src = '../static/images/' + character + '.jpg';
             img.alt = character;
             img.style.width = '80px';
             img.style.height = '80px';

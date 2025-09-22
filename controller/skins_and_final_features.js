@@ -13,44 +13,49 @@ class SkinsManager {
     initializeSkins() {
         return {
             'asta': {
-                'default': { name: 'Asta Classique', image: 'asta.jpg', rarity: 'common' },
-                'demon': { name: 'Asta Démon', image: 'asta_demon.jpg', rarity: 'epic', unlock: 'win_10_games' },
-                'royal': { name: 'Asta Royal', image: 'asta_royal.jpg', rarity: 'legendary', unlock: 'reach_level_5' }
+                'default': { name: 'Asta Classique', image: '../static/images/asta.jpg', rarity: 'common' },
+                'demon': { name: 'Asta Démon', image: '../static/images/asta_demon.jpg', rarity: 'epic', unlock: 'win_10_games' },
+                'royal': { name: 'Asta Royal', image: '../static/images/asta_royal.jpg', rarity: 'legendary', unlock: 'reach_level_5' }
             },
             'deku': {
-                'default': { name: 'Deku Étudiant', image: 'deku.jpg', rarity: 'common' },
-                'hero': { name: 'Deku Héros', image: 'deku_hero.jpg', rarity: 'rare', unlock: 'win_streak_5' },
-                'danger_sense': { name: 'Deku Danger Sense', image: 'deku_danger.jpg', rarity: 'epic', unlock: 'use_special_50_times' }
+                'default': { name: 'Deku Étudiant', image: '../static/images/deku.jpg', rarity: 'common' },
+                'hero': { name: 'Deku Héros', image: '../static/images/deku_hero.jpg', rarity: 'rare', unlock: 'win_streak_5' },
+                'danger_sense': { name: 'Deku Danger Sense', image: '../static/images/deku_danger.jpg', rarity: 'epic', unlock: 'use_special_50_times' }
             },
             'gojo': {
-                'default': { name: 'Gojo Sensei', image: 'gojo.jpg', rarity: 'common' },
-                'blindfold': { name: 'Gojo Bandeau', image: 'gojo_blindfold.jpg', rarity: 'rare', unlock: 'perfect_game' },
-                'domain': { name: 'Gojo Expansion', image: 'gojo_domain.jpg', rarity: 'mythic', unlock: 'win_without_damage' }
+                'default': { name: 'Gojo Sensei', image: '../static/images/gojo.jpg', rarity: 'common' },
+                'blindfold': { name: 'Gojo Bandeau', image: '../static/images/gojo_blindfold.jpg', rarity: 'rare', unlock: 'perfect_game' },
+                'domain': { name: 'Gojo Expansion', image: '../static/images/gojo_domain.jpg', rarity: 'mythic', unlock: 'win_without_damage' }
             },
             'goku': {
-                'default': { name: 'Goku Base', image: 'goku.jpg', rarity: 'common' },
-                'super_saiyan': { name: 'Super Saiyan', image: 'goku_ss.jpg', rarity: 'epic', unlock: 'deal_1000_damage' },
-                'ultra_instinct': { name: 'Ultra Instinct', image: 'goku_ui.jpg', rarity: 'mythic', unlock: 'master_difficulty' }
+                'default': { name: 'Goku Base', image: '../static/images/goku.jpg', rarity: 'common' },
+                'super_saiyan': { name: 'Super Saiyan', image: '../static/images/goku_ss.jpg', rarity: 'epic', unlock: 'deal_1000_damage' },
+                'ultra_instinct': { name: 'Ultra Instinct', image: '../static/images/goku_ui.jpg', rarity: 'mythic', unlock: 'master_difficulty' }
             },
             'ichigo': {
-                'default': { name: 'Ichigo Shinigami', image: 'ichigo.jpg', rarity: 'common' },
-                'bankai': { name: 'Ichigo Bankai', image: 'ichigo_bankai.jpg', rarity: 'epic', unlock: 'evolution_level_3' },
-                'hollow': { name: 'Ichigo Hollow', image: 'ichigo_hollow.jpg', rarity: 'legendary', unlock: 'berserker_mode' }
+                'default': { name: 'Ichigo Shinigami', image: '../static/images/ichigo.jpg', rarity: 'common' },
+                'bankai': { name: 'Ichigo Bankai', image: '../static/images/ichigo_bankai.jpg', rarity: 'epic', unlock: 'evolution_level_3' },
+                'hollow': { name: 'Ichigo Hollow', image: '../static/images/ichigo_hollow.jpg', rarity: 'legendary', unlock: 'berserker_mode' }
             },
             'kaijuu': {
-                'default': { name: 'Kaiju Humain', image: 'kaijuu.jpg', rarity: 'common' },
-                'partial': { name: 'Transformation Partielle', image: 'kaijuu_partial.jpg', rarity: 'rare', unlock: 'transform_10_times' },
-                'full': { name: 'Kaiju Complet', image: 'kaijuu_full.jpg', rarity: 'legendary', unlock: 'tank_mode_master' }
+                'default': { name: 'Kaiju Humain', image: '../static/images/kaijuu.jpg', rarity: 'common' },
+                'partial': { name: 'Transformation Partielle', image: '../static/images/kaijuu_partial.jpg', rarity: 'rare', unlock: 'transform_10_times' },
+                'full': { name: 'Kaiju Complet', image: '../static/images/kaijuu_full.jpg', rarity: 'legendary', unlock: 'tank_mode_master' }
             },
             'luffy': {
-                'default': { name: 'Luffy Pirate', image: 'luffy.jpg', rarity: 'common' },
-                'gear_second': { name: 'Gear Second', image: 'luffy_g2.jpg', rarity: 'rare', unlock: 'speed_demon' },
-                'gear_fifth': { name: 'Gear Fifth', image: 'luffy_g5.jpg', rarity: 'mythic', unlock: 'pirate_king' }
+                'default': { name: 'Luffy Pirate', image: '../static/images/luffy.jpg', rarity: 'common' },
+                'gear_second': { name: 'Gear Second', image: '../static/images/luffy_g2.jpg', rarity: 'rare', unlock: 'speed_demon' },
+                'gear_fifth': { name: 'Gear Fifth', image: '../static/images/luffy_g5.jpg', rarity: 'mythic', unlock: 'pirate_king' }
             },
             'naruto': {
-                'default': { name: 'Naruto Genin', image: 'naruto.jpg', rarity: 'common' },
-                'sage': { name: 'Mode Ermite', image: 'naruto_sage.jpg', rarity: 'epic', unlock: 'wisdom_master' },
-                'kyuubi': { name: 'Mode Kyuubi', image: 'naruto_kyuubi.jpg', rarity: 'legendary', unlock: 'nine_tails_power' }
+                'default': { name: 'Naruto Genin', image: '../static/images/naruto.jpg', rarity: 'common' },
+                'sage': { name: 'Mode Ermite', image: '../static/images/naruto_sage.jpg', rarity: 'epic', unlock: 'wisdom_master' },
+                'kyuubi': { name: 'Mode Kyuubi', image: '../static/images/naruto_kyuubi.jpg', rarity: 'legendary', unlock: 'nine_tails_power' }
+            },
+            'saitama': {
+                'default': { name: 'Saitama Héros', image: '../static/images/saitama.jpg', rarity: 'common' },
+                'serious': { name: 'Saitama Sérieux', image: '../static/images/saitama_serious.jpg', rarity: 'epic', unlock: 'one_punch_master' },
+                'bald_cape': { name: 'Saitama Cape', image: '../static/images/saitama_cape.jpg', rarity: 'legendary', unlock: 'hero_association' }
             },
             'saitama': {
                 'default': { name: 'Saitama Héros', image: 'saitama.jpg', rarity: 'common' },

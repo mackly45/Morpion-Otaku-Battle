@@ -49,8 +49,6 @@ def initialize_game() -> Union[Response, Tuple[Response, int]]:
 @app.route('/ai-move', methods=['POST'])
 def get_ai_move() -> Union[Response, Tuple[Response, int]]:
     """Get AI move"""
-    global game_model
-    
     if not game_model.joueur1 or not game_model.joueur2:
         return jsonify({'error': 'Partie non initialisee'}), 400
     
@@ -81,8 +79,6 @@ def get_stats() -> Union[Response, Tuple[Response, int]]:
 @app.route('/jouer', methods=['POST'])
 def jouer_coup() -> Union[Response, Tuple[Response, int]]:
     """Play a move on the grid"""
-    global game_model
-
     if not game_model.joueur1 or not game_model.joueur2:
         return jsonify({'error': 'Partie non initialisee'}), 400
 
@@ -107,8 +103,6 @@ def jouer_coup() -> Union[Response, Tuple[Response, int]]:
 @app.route('/reset', methods=['POST'])
 def reset_game() -> Union[Response, Tuple[Response, int]]:
     """Reset the current game"""
-    global game_model
-
     if not game_model.joueur1 or not game_model.joueur2:
         return jsonify({'error': 'Partie non initialisee'}), 400
 

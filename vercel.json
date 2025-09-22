@@ -3,7 +3,7 @@
   "name": "morpion-otaku-battle",
   "builds": [
     {
-      "src": "app.py",
+      "src": "api/index.py",
       "use": "@vercel/python"
     },
     {
@@ -25,23 +25,23 @@
       "dest": "/view/$1"
     },
     {
-      "src": "/",
-      "dest": "/view/index.html"
+      "src": "/api/(.*)",
+      "dest": "/api/index.py"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/app.py"
+      "src": "/",
+      "dest": "/api/index.py"
     },
     {
       "src": "/(.*)",
-      "dest": "/app.py"
+      "dest": "/view/$1"
     }
   ],
   "env": {
     "PYTHON_VERSION": "3.11"
   },
   "functions": {
-    "app.py": {
+    "api/index.py": {
       "runtime": "python3.11"
     }
   }

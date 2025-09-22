@@ -258,41 +258,96 @@ class GameController {
             if (tourIndicateur) {
                 tourIndicateur.textContent = 'Match nul !';
             }
+    async jouerCoup(ligne, colonne) {
+        if (!this.model || this.model.partie_terminee) return;
+        
+        // In AI mode, prevent player from playing when it's AI's turn
+        if (this.gameMode === 'ai' && this.model.joueur_actuel && 
+            this.model.joueur2 && this.model.joueur_actuel.nom === this.model.joueur2.nom) {
+            console.log('It\'s AI turn, ignoring player move');
+            return;
+        }
+
+        try {
+            if (this.model.useAPI) {
+                // Utiliser l'API
+                const response = await fetch('/api/move', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ligne: ligne,
+                        colonne: colonne
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    console.error('Move error:', data.error);
+                    return;
+                }
+                
+                this.model = data.game_state;
+            } else {
+                // Utiliser le modèle local
+                const success = this.model.jouer_coup(ligne, colonne);
+                if (!success) {
+                    console.log('Invalid move');
+                    return;
+                }
+            }
+            
+            // Play move sound
+            if (window.audioManager) {
+                window.audioManager.playSound('move');
+            }
+
+            this.updateUI();
+
+            if (this.model.partie_terminee) {
+                this.handleGameEnd();
+            } else if (this.gameMode === 'ai' && this.model.joueur_actuel && 
+                       this.model.joueur2 && this.model.joueur_actuel.nom === this.model.joueur2.nom) {
+                // C'est au tour de l'IA
+                setTimeout(() => this.playAIMove(), 1000);
+            }
+            
+        } catch (error) {
+            console.error('Erreur lors du coup:', error);
+        }
+    }
+
+    handleGameEnd() {
+        if (this.model.vainqueur) {
+            // Afficher le gagnant
+            const tourIndicateur = document.getElementById('tour-indicateur');
+            if (tourIndicateur) {
+                tourIndicateur.textContent = this.model.vainqueur.nom + ' a gagné !';
+            }
+            
+            // Play victory sound
+            if (window.audioManager) {
+                window.audioManager.playSound('victory');
+            }
             
             setTimeout(() => {
                 this.showEndGame();
             }, 2000);
-        }
-    }
-                    
-                    // Play victory sound
-                    if (window.audioManager) {
-                        window.audioManager.playSound('win');
-                    }
-                    
-                    // Attendre un peu avant de montrer l'écran de fin
-                    setTimeout(() => {
-                        this.showEndGame();
-                    }, 2000);
-                } else {
-                    // Match nul
-                    const tourIndicateur = document.getElementById('tour-indicateur');
-                    if (tourIndicateur) {
-                        tourIndicateur.textContent = 'Match nul ! Personne ne gagne.';
-                    }
-                    setTimeout(() => {
-                        this.showEndGame();
-                    }, 2000);
-                }
-            } else if (this.gameMode === 'ai' && this.model.joueur_actuel && 
-                      this.model.joueur_actuel.nom === this.model.joueur2.nom) {
-                // Si c'est le tour de l'IA, jouer automatiquement après un délai
-                console.log('Player move completed, AI turn next');
-                setTimeout(() => this.playAIMove(), 1500);
+        } else {
+            // Match nul
+            const tourIndicateur = document.getElementById('tour-indicateur');
+            if (tourIndicateur) {
+                tourIndicateur.textContent = 'Match nul !';
             }
-        } catch (error) {
-            console.error('Erreur lors du coup:', error);
-            alert('Erreur lors du coup: ' + error.message);
+            
+            setTimeout(() => {
+                this.showEndGame();
+            }, 2000);
         }
     }
 

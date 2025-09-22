@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+# Add permissions for GitHub Actions
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -61,18 +65,4 @@ jobs:
         print('✅ Game model test passed')
         "
         echo "All tests completed successfully! 🎮"
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
-        publish_branch: gh-pages
+        echo "Ready for community use! Clone the repo and run 'python app.py' to play! 🎮"

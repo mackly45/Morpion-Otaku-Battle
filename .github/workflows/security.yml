@@ -1,0 +1,87 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 12 * * 1'  # Run every Monday at noon
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  dependency-scan:
+    name: 🔍 Dependency Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+        pip install -r requirements.txt
+        
+    - name: Run Safety check
+      run: |
+        echo "🔒 Checking for known security vulnerabilities..."
+        safety check --json --output safety-report.json || true
+        
+    - name: Run Bandit security scan
+      run: |
+        echo "🛡️ Running static security analysis..."
+        bandit -r . -f json -o bandit-report.json || true
+        
+    - name: Upload security results
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          bandit-report.json
+
+  code-quality:
+    name: 📊 Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install analysis tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install radon complexity-report
+        
+    - name: Analyze code complexity
+      run: |
+        echo "📈 Analyzing code complexity..."
+        radon cc . --min B
+        radon mi . --min B
+        
+    - name: Generate complexity report
+      run: |
+        echo "📊 Generating complexity report..."
+        radon cc . --json > complexity-report.json || true
+        
+    - name: Upload complexity report
+      uses: actions/upload-artifact@v3
+      with:
+        name: complexity-report
+        path: complexity-report.json

@@ -24,6 +24,12 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
     
+    - name: Setup GitHub CLI
+      run: |
+        # GitHub CLI is pre-installed on runner, just verify
+        gh --version
+        echo "GitHub CLI ready for release management"
+    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -44,6 +50,8 @@ jobs:
     
     - name: Get current version
       id: current_version
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         if [ -f "VERSION" ]; then
           VERSION=$(cat VERSION)
@@ -52,12 +60,23 @@ jobs:
         fi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Current version: $VERSION"
+        
+        # Check if this version already has a release
+        if gh release view "v$VERSION" &>/dev/null; then
+          echo "Release v$VERSION already exists, will auto-increment"
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
     
     - name: Determine version bump
       id: version_bump
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         COMMIT_MSG="${{ github.event.head_commit.message }}"
         CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+        VERSION_EXISTS="${{ steps.current_version.outputs.exists }}"
         
         # Parse current version
         IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
@@ -65,8 +84,12 @@ jobs:
         MINOR=${VERSION_PARTS[1]}
         PATCH=${VERSION_PARTS[2]}
         
+        # If version exists, auto-increment patch
+        if [ "$VERSION_EXISTS" = "true" ]; then
+          PATCH=$((PATCH + 1))
+          BUMP_TYPE="patch (auto-increment)"
         # Determine bump type based on commit message
-        if [[ $COMMIT_MSG =~ \[major\]|\[breaking\]|BREAKING\ CHANGE ]]; then
+        elif [[ $COMMIT_MSG =~ \[major\]|\[breaking\]|BREAKING\ CHANGE ]]; then
           MAJOR=$((MAJOR + 1))
           MINOR=0
           PATCH=0
@@ -81,6 +104,14 @@ jobs:
         fi
         
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+        
+        # Double check the new version doesn't exist
+        while gh release view "v$NEW_VERSION" &>/dev/null; do
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "Version v$NEW_VERSION already exists, incrementing..."
+        done
+        
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
         echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
         echo "New version will be: $NEW_VERSION (bump: $BUMP_TYPE)"
@@ -156,6 +187,8 @@ jobs:
         files: |
           morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.zip
           morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz
+        make_latest: true
+        generate_release_notes: false
     
     - name: Create release assets
       run: |

@@ -6,9 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
-# Add permissions for GitHub Actions
+# Permissions pour GitHub Actions
 permissions:
   contents: read
+  pages: write
+  id-token: write
+  actions: read
 
 jobs:
   test:
@@ -18,10 +21,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     
@@ -32,7 +35,7 @@ jobs:
     
     - name: Test Python syntax
       run: |
-        echo "Testing Python syntax..."
+        echo "🧪 Testing Python syntax..."
         python -m py_compile app.py
         python -m py_compile model/game_model.py
         python -m py_compile model/ai_player.py
@@ -40,20 +43,15 @@ jobs:
     
     - name: Test Flask Application
       run: |
-        echo "Testing Flask application..."
-        python -c "
-        import sys
-        sys.path.append('.')
-        from app import app
-        with app.test_client() as client:
-            response = client.get('/')
-            assert response.status_code == 200
-            print('✅ Flask server test passed')
-        "
+        echo "🌐 Testing Flask application..."
+        timeout 10s python app.py &
+        sleep 5
+        curl -f http://localhost:5000 || exit 1
+        echo "✅ Flask server test passed"
     
     - name: Test Game Model
       run: |
-        echo "Testing game model..."
+        echo "🎮 Testing game model..."
         python -c "
         import sys
         sys.path.append('.')
@@ -64,5 +62,78 @@ jobs:
         assert game.joueur2.nom == 'Luffy'
         print('✅ Game model test passed')
         "
-        echo "All tests completed successfully! 🎮"
-        echo "Ready for community use! Clone the repo and run 'python app.py' to play! 🎮"
+        echo "🎯 All tests completed successfully!"
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Create static site
+      run: |
+        echo "🏗️ Preparing static site for GitHub Pages..."
+        mkdir -p _site
+        cp -r * _site/ 2>/dev/null || true
+        # Créer un index.html qui redirige vers l'app Flask
+        cat > _site/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Morpion Otaku Battle</title>
+            <meta charset="UTF-8">
+            <meta http-equiv="refresh" content="0; url=./view/index.html">
+            <style>
+                body { font-family: Arial; text-align: center; padding: 50px; }
+                .container { max-width: 600px; margin: 0 auto; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🎮 Morpion Otaku Battle</h1>
+                <p>Redirection vers le jeu...</p>
+                <p><a href="./view/index.html">Cliquez ici si la redirection ne fonctionne pas</a></p>
+                <hr>
+                <h2>🚀 Installation Locale (Recommandée)</h2>
+                <p>Pour la meilleure expérience avec toutes les fonctionnalités :</p>
+                <code>git clone https://github.com/${{ github.repository }}.git</code><br>
+                <code>cd Morpion-Otaku-Battle</code><br>
+                <code>pip install -r requirements.txt</code><br>
+                <code>python app.py</code><br>
+                <p>Puis ouvrez <strong>http://localhost:5000</strong></p>
+            </div>
+        </body>
+        </html>
+        EOF
+        echo "✅ Static site prepared"
+      
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: './_site'
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
+      
+    - name: Success notification
+      run: |
+        echo "🎉 Deployment successful!"
+        echo "🌐 Live at: ${{ steps.deployment.outputs.page_url }}"
+        echo "📂 Repository: https://github.com/${{ github.repository }}"
+        echo "🚀 Ready for community use!"

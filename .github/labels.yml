@@ -1,0 +1,130 @@
+# 🏷️ Repository Labels Configuration
+# This file defines organized labels for issues and pull requests
+
+# 🐛 Bug labels
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working"
+
+- name: "critical bug"
+  color: "b60205"
+  description: "Critical bug that breaks core functionality"
+
+- name: "minor bug"
+  color: "ff9f9f"
+  description: "Minor bug that doesn't affect core functionality"
+
+# ✨ Feature labels
+- name: "enhancement"
+  color: "a2eeef"
+  description: "New feature or request"
+
+- name: "feature request"
+  color: "1f77d4"
+  description: "Request for new game feature"
+
+- name: "anime character"
+  color: "ff69b4"
+  description: "New anime character request"
+
+- name: "ui/ux"
+  color: "7b68ee"
+  description: "User interface and experience improvements"
+
+# 📚 Documentation labels
+- name: "documentation"
+  color: "0075ca"
+  description: "Improvements or additions to documentation"
+
+- name: "wiki"
+  color: "0366d6"
+  description: "Wiki documentation updates"
+
+- name: "readme"
+  color: "5dade2"
+  description: "README file updates"
+
+# 🔧 Technical labels
+- name: "dependencies"
+  color: "0366d6"
+  description: "Pull requests that update a dependency file"
+
+- name: "security"
+  color: "ee0701"
+  description: "Security related issues or improvements"
+
+- name: "performance"
+  color: "fbca04"
+  description: "Performance improvements"
+
+- name: "refactoring"
+  color: "c5def5"
+  description: "Code refactoring without functional changes"
+
+# 🎮 Game-specific labels
+- name: "ai"
+  color: "28a745"
+  description: "AI player functionality"
+
+- name: "gameplay"
+  color: "ffa500"
+  description: "Core game mechanics"
+
+- name: "visual effects"
+  color: "9932cc"
+  description: "Visual effects and animations"
+
+- name: "sound"
+  color: "ff6347"
+  description: "Sound effects and music"
+
+# 🏷️ Priority labels
+- name: "priority: high"
+  color: "b60205"
+  description: "High priority issue"
+
+- name: "priority: medium"
+  color: "fbca04"
+  description: "Medium priority issue"
+
+- name: "priority: low"
+  color: "0e8a16"
+  description: "Low priority issue"
+
+# 📊 Status labels
+- name: "status: in progress"
+  color: "0052cc"
+  description: "Currently being worked on"
+
+- name: "status: needs review"
+  color: "006b75"
+  description: "Needs code review"
+
+- name: "status: blocked"
+  color: "d93f0b"
+  description: "Blocked by other issues or dependencies"
+
+- name: "status: won't fix"
+  color: "ffffff"
+  description: "This will not be worked on"
+
+# 🎯 Special labels
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed"
+
+- name: "question"
+  color: "d876e3"
+  description: "Further information is requested"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "This issue or pull request already exists"
+
+- name: "invalid"
+  color: "e4e669"
+  description: "This doesn't seem right"

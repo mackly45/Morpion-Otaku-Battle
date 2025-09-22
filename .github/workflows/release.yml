@@ -1,0 +1,221 @@
+name: 🚀 Auto Release
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'docs/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      run: |
+        echo "🧪 Running tests before release..."
+        python -m py_compile app.py
+        python -m py_compile model/game_model.py
+        python -m py_compile model/ai_player.py
+        echo "✅ All tests passed"
+    
+    - name: Get current version
+      id: current_version
+      run: |
+        if [ -f "VERSION" ]; then
+          VERSION=$(cat VERSION)
+        else
+          VERSION="1.0.0"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Current version: $VERSION"
+    
+    - name: Determine version bump
+      id: version_bump
+      run: |
+        COMMIT_MSG="${{ github.event.head_commit.message }}"
+        CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+        
+        # Parse current version
+        IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=${VERSION_PARTS[2]}
+        
+        # Determine bump type based on commit message
+        if [[ $COMMIT_MSG =~ \[major\]|\[breaking\]|BREAKING\ CHANGE ]]; then
+          MAJOR=$((MAJOR + 1))
+          MINOR=0
+          PATCH=0
+          BUMP_TYPE="major"
+        elif [[ $COMMIT_MSG =~ \[minor\]|\[feature\]|feat: ]]; then
+          MINOR=$((MINOR + 1))
+          PATCH=0
+          BUMP_TYPE="minor"
+        else
+          PATCH=$((PATCH + 1))
+          BUMP_TYPE="patch"
+        fi
+        
+        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+        echo "New version will be: $NEW_VERSION (bump: $BUMP_TYPE)"
+    
+    - name: Update version file
+      run: |
+        echo "${{ steps.version_bump.outputs.new_version }}" > VERSION
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add VERSION
+        git commit -m "🔖 Bump version to ${{ steps.version_bump.outputs.new_version }}" || exit 0
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        NEW_VERSION="${{ steps.version_bump.outputs.new_version }}"
+        CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+        
+        echo "# 🎮 Morpion Otaku Battle v$NEW_VERSION" > RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        echo "## 🚀 What's New" >> RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        
+        # Get commits since last version
+        if git tag -l "v$CURRENT_VERSION" | grep -q .; then
+          COMMITS=$(git log --oneline v$CURRENT_VERSION..HEAD --pretty=format:"- %s" | head -20)
+        else
+          COMMITS=$(git log --oneline --pretty=format:"- %s" | head -10)
+        fi
+        
+        if [ -z "$COMMITS" ]; then
+          echo "- 🔧 Minor improvements and bug fixes" >> RELEASE_NOTES.md
+        else
+          echo "$COMMITS" >> RELEASE_NOTES.md
+        fi
+        
+        echo "" >> RELEASE_NOTES.md
+        echo "## 🎯 Game Features" >> RELEASE_NOTES.md
+        echo "- 🤖 Advanced AI with multiple difficulty levels" >> RELEASE_NOTES.md
+        echo "- 🎨 24+ anime characters with unique abilities" >> RELEASE_NOTES.md
+        echo "- ⚡ Visual effects and animations" >> RELEASE_NOTES.md
+        echo "- 🏆 Evolution and progression system" >> RELEASE_NOTES.md
+        echo "- 🎵 Sound effects and background music" >> RELEASE_NOTES.md
+        echo "- 📱 Responsive design for all devices" >> RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        echo "## 🛠️ Installation" >> RELEASE_NOTES.md
+        echo "\`\`\`bash" >> RELEASE_NOTES.md
+        echo "git clone https://github.com/${{ github.repository }}.git" >> RELEASE_NOTES.md
+        echo "cd Morpion-Otaku-Battle" >> RELEASE_NOTES.md
+        echo "pip install -r requirements.txt" >> RELEASE_NOTES.md
+        echo "python app.py" >> RELEASE_NOTES.md
+        echo "\`\`\`" >> RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        echo "🌐 **Live Demo:** https://${{ github.repository_owner }}.github.io/Morpion-Otaku-Battle/" >> RELEASE_NOTES.md
+        
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version_bump.outputs.new_version }}
+        release_name: 🎮 Morpion Otaku Battle v${{ steps.version_bump.outputs.new_version }}
+        body: ${{ steps.changelog.outputs.changelog }}
+        draft: false
+        prerelease: false
+    
+    - name: Create release assets
+      run: |
+        # Create a clean distribution
+        mkdir -p release-assets
+        
+        # Copy game files
+        cp -r view/ release-assets/
+        cp -r model/ release-assets/
+        cp -r controller/ release-assets/
+        cp -r static/ release-assets/
+        cp app.py release-assets/
+        cp requirements.txt release-assets/
+        cp README.md release-assets/
+        cp LICENSE release-assets/ 2>/dev/null || echo "# MIT License" > release-assets/LICENSE
+        
+        # Create installation script
+        cat > release-assets/install.bat << 'EOF'
+        @echo off
+        echo 🎮 Installing Morpion Otaku Battle...
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        echo ✅ Installation complete!
+        echo 🚀 Run: python app.py
+        pause
+        EOF
+        
+        cat > release-assets/install.sh << 'EOF'
+        #!/bin/bash
+        echo "🎮 Installing Morpion Otaku Battle..."
+        python3 -m pip install --upgrade pip
+        pip3 install -r requirements.txt
+        echo "✅ Installation complete!"
+        echo "🚀 Run: python3 app.py"
+        EOF
+        chmod +x release-assets/install.sh
+        
+        # Create archive
+        cd release-assets
+        zip -r ../morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.zip .
+        tar -czf ../morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz .
+        cd ..
+    
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.zip
+        asset_name: morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.zip
+        asset_content_type: application/zip
+    
+    - name: Upload Release Assets (tar.gz)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz
+        asset_name: morpion-otaku-battle-v${{ steps.version_bump.outputs.new_version }}.tar.gz
+        asset_content_type: application/gzip
+    
+    - name: Push changes
+      run: |
+        git push origin main
+        echo "🎉 Release v${{ steps.version_bump.outputs.new_version }} created successfully!"
+        echo "📦 Download: ${{ steps.create_release.outputs.html_url }}"

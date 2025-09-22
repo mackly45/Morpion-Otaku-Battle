@@ -1,0 +1,87 @@
+version: 2
+
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "@mackl"
+    assignees:
+      - "@mackl"
+    commit-message:
+      prefix: "🔧 deps"
+      prefix-development: "🔧 dev-deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "python"
+    ignore:
+      # Ignore major version updates for critical dependencies
+      - dependency-name: "flask"
+        update-types: ["version-update:semver-major"]
+    
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "@mackl"
+    assignees:
+      - "@mackl"
+    commit-message:
+      prefix: "🚀 ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # NPM dependencies (if any)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "11:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "@mackl"
+    assignees:
+      - "@mackl"
+    commit-message:
+      prefix: "🔧 deps"
+      prefix-development: "🔧 dev-deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "javascript"
+    ignore:
+      # Ignore updates to packages with known breaking changes
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+        
+# Groups related updates together
+groups:
+  python-minor-updates:
+    patterns:
+      - "flask*"
+      - "werkzeug*"
+      - "jinja*"
+    update-types:
+      - "minor"
+      - "patch"
+      
+  github-actions-updates:
+    patterns:
+      - "actions/*"
+    update-types:
+      - "minor"
+      - "patch"

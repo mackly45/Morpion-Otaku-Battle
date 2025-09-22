@@ -111,40 +111,61 @@ class GameController {
         try {
             console.log('Initializing game with mode:', this.gameMode, 'difficulty:', this.aiDifficulty);
             
-            const response = await fetch('/initialize', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    perso1: this.perso1,
-                    perso2: this.perso2,
-                    ai_mode: this.gameMode === 'ai',
-                    ai_difficulty: this.aiDifficulty
-                })
-            });
+            // Essayer d'abord l'API
+            try {
+                const response = await fetch('/api/initialize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        perso1: this.perso1,
+                        perso2: this.perso2,
+                        ai_mode: this.gameMode === 'ai',
+                        ai_difficulty: this.aiDifficulty
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
-            }
-
-            const data = await response.json();
-            if (data.error) {
-                throw new Error(data.error);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error) {
+                        this.model = data.game_state;
+                        this.model.useAPI = true;
+                        console.log('Game initialized with API:', this.model);
+                        this.showGame();
+                        this.updateUI();
+                        
+                        if (this.gameMode === 'ai' && this.model.joueur_actuel && 
+                            this.model.joueur2 && this.model.joueur_actuel.nom === this.model.joueur2.nom) {
+                            setTimeout(() => this.playAIMove(), 1000);
+                        }
+                        return;
+                    }
+                }
+            } catch (apiError) {
+                console.log('API not available, using local mode:', apiError.message);
             }
             
-            this.model = data;
-            console.log('Game initialized:', this.model);
-
+            // Fallback vers le modèle local
+            console.log('Using local game model');
+            if (!window.LocalGameModel) {
+                throw new Error('LocalGameModel not loaded');
+            }
+            
+            this.model = new window.LocalGameModel();
+            this.model.choisir_personnages(this.perso1, this.perso2, this.gameMode);
+            this.model.useAPI = false;
+            
+            console.log('Game initialized locally:', this.model.to_dict());
             this.showGame();
             this.updateUI();
             
             // If AI mode and it's AI's turn, make AI move
             if (this.gameMode === 'ai' && this.model.joueur_actuel && 
-                this.model.joueur_actuel.nom === this.model.joueur2.nom) {
-                console.log('AI turn detected, making AI move...');
+                this.model.joueur2 && this.model.joueur_actuel.nom === this.model.joueur2.nom) {
                 setTimeout(() => this.playAIMove(), 1000);
             }
+            
         } catch (error) {
             console.error('Erreur lors de l\'initialisation:', error);
             alert('Erreur lors du démarrage du jeu: ' + error.message);
@@ -156,34 +177,44 @@ class GameController {
         
         // In AI mode, prevent player from playing when it's AI's turn
         if (this.gameMode === 'ai' && this.model.joueur_actuel && 
-            this.model.joueur_actuel.nom === this.model.joueur2.nom) {
+            this.model.joueur2 && this.model.joueur_actuel.nom === this.model.joueur2.nom) {
             console.log('It\'s AI turn, ignoring player move');
             return;
         }
 
         try {
-            const response = await fetch('/jouer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ligne: ligne,
-                    colonne: colonne
-                })
-            });
+            if (this.model.useAPI) {
+                // Utiliser l'API
+                const response = await fetch('/api/move', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ligne: ligne,
+                        colonne: colonne
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
-            }
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
 
-            const data = await response.json();
-            if (data.error) {
-                console.error('Move error:', data.error);
-                return;
+                const data = await response.json();
+                if (data.error) {
+                    console.error('Move error:', data.error);
+                    return;
+                }
+                
+                this.model = data.game_state;
+            } else {
+                // Utiliser le modèle local
+                const success = this.model.jouer_coup(ligne, colonne);
+                if (!success) {
+                    console.log('Invalid move');
+                    return;
+                }
             }
-            
-            this.model = data;
             
             // Play move sound
             if (window.audioManager) {
@@ -193,12 +224,46 @@ class GameController {
             this.updateUI();
 
             if (this.model.partie_terminee) {
-                if (this.model.gagnant) {
-                    // Montrer temporairement qui a gagné le morpion
-                    const tourIndicateur = document.getElementById('tour-indicateur');
-                    if (tourIndicateur) {
-                        tourIndicateur.textContent = this.model.gagnant.nom + ' a gagné le morpion ! Combat en cours...';
-                    }
+                this.handleGameEnd();
+            } else if (this.gameMode === 'ai' && this.model.joueur_actuel && 
+                       this.model.joueur2 && this.model.joueur_actuel.nom === this.model.joueur2.nom) {
+                // C'est au tour de l'IA
+                setTimeout(() => this.playAIMove(), 1000);
+            }
+            
+        } catch (error) {
+            console.error('Erreur lors du coup:', error);
+        }
+    }
+
+    handleGameEnd() {
+        if (this.model.vainqueur) {
+            // Afficher le gagnant
+            const tourIndicateur = document.getElementById('tour-indicateur');
+            if (tourIndicateur) {
+                tourIndicateur.textContent = this.model.vainqueur.nom + ' a gagné !';
+            }
+            
+            // Play victory sound
+            if (window.audioManager) {
+                window.audioManager.playSound('victory');
+            }
+            
+            setTimeout(() => {
+                this.showEndGame();
+            }, 2000);
+        } else {
+            // Match nul
+            const tourIndicateur = document.getElementById('tour-indicateur');
+            if (tourIndicateur) {
+                tourIndicateur.textContent = 'Match nul !';
+            }
+            
+            setTimeout(() => {
+                this.showEndGame();
+            }, 2000);
+        }
+    }
                     
                     // Play victory sound
                     if (window.audioManager) {

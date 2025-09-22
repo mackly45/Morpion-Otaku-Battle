@@ -3,88 +3,85 @@ from flask import Flask, request, jsonify, render_template_string
 import sys
 import os
 import json
+from typing import Optional, Union, List
 
 # Add the project root to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-try:
-    from model.game_model import MorpionModel
-    from model.ai_player import AIPlayer
-except ImportError:
-    # Fallback if imports fail
-    class MorpionModel:
-        def __init__(self):
-            self.partie_terminee = False
-            self.vainqueur = None
-            self.joueur_actuel = None
-            self.joueur1 = None
-            self.joueur2 = None
-            self.grille = [[None for _ in range(3)] for _ in range(3)]
-        
-        def choisir_personnages(self, perso1, perso2):
-            class Joueur:
-                def __init__(self, nom):
-                    self.nom = nom.capitalize()
-            
-            self.joueur1 = Joueur(perso1)
-            self.joueur2 = Joueur(perso2)
-            self.joueur_actuel = self.joueur1
-        
-        def jouer_coup(self, ligne, colonne, joueur):
-            if self.grille[ligne][colonne] is None:
-                self.grille[ligne][colonne] = joueur.nom
-                self._verifier_victoire()
-                if not self.partie_terminee:
-                    self.joueur_actuel = self.joueur2 if joueur == self.joueur1 else self.joueur1
-                return True
-            return False
-        
-        def _verifier_victoire(self):
-            # Vérification horizontale, verticale et diagonale
-            for i in range(3):
-                if (self.grille[i][0] == self.grille[i][1] == self.grille[i][2] and self.grille[i][0] is not None):
-                    self.partie_terminee = True
-                    self.vainqueur = self.joueur1 if self.grille[i][0] == self.joueur1.nom else self.joueur2
-                    return
-                if (self.grille[0][i] == self.grille[1][i] == self.grille[2][i] and self.grille[0][i] is not None):
-                    self.partie_terminee = True
-                    self.vainqueur = self.joueur1 if self.grille[0][i] == self.joueur1.nom else self.joueur2
-                    return
-            
-            # Diagonales
-            if (self.grille[0][0] == self.grille[1][1] == self.grille[2][2] and self.grille[0][0] is not None):
-                self.partie_terminee = True
-                self.vainqueur = self.joueur1 if self.grille[0][0] == self.joueur1.nom else self.joueur2
-                return
-            if (self.grille[0][2] == self.grille[1][1] == self.grille[2][0] and self.grille[0][2] is not None):
-                self.partie_terminee = True
-                self.vainqueur = self.joueur1 if self.grille[0][2] == self.joueur1.nom else self.joueur2
-                return
-            
-            # Vérifier égalité
-            if all(self.grille[i][j] is not None for i in range(3) for j in range(3)):
-                self.partie_terminee = True
-                self.vainqueur = None
-        
-        def to_dict(self):
-            return {
-                'grille': self.grille,
-                'partie_terminee': self.partie_terminee,
-                'vainqueur': self.vainqueur.nom if self.vainqueur else None,
-                'joueur_actuel': self.joueur_actuel.nom if self.joueur_actuel else None,
-                'joueur1': self.joueur1.nom if self.joueur1 else None,
-                'joueur2': self.joueur2.nom if self.joueur2 else None
-            }
+# Fallback classes (always use these for simplicity)
+class Joueur:
+    def __init__(self, nom: str):
+        self.nom = nom.capitalize()
+
+class MorpionModel:
+    def __init__(self):
+        self.partie_terminee = False
+        self.vainqueur: Optional[Joueur] = None
+        self.joueur_actuel: Optional[Joueur] = None
+        self.joueur1: Optional[Joueur] = None
+        self.joueur2: Optional[Joueur] = None
+        self.grille: List[List[Optional[str]]] = [[None for _ in range(3)] for _ in range(3)]
     
-    class AIPlayer:
-        @staticmethod
-        def jouer_coup_optimal(grille, joueur_nom, difficulte='medium'):
-            # IA simple pour Vercel
-            for i in range(3):
-                for j in range(3):
-                    if grille[i][j] is None:
-                        return i, j
-            return None, None
+    def choisir_personnages(self, perso1: str, perso2: str):
+        self.joueur1 = Joueur(perso1)
+        self.joueur2 = Joueur(perso2)
+        self.joueur_actuel = self.joueur1
+    
+    def jouer_coup(self, ligne: int, colonne: int, joueur: Joueur) -> bool:
+        if self.grille[ligne][colonne] is None:
+            self.grille[ligne][colonne] = joueur.nom
+            self._verifier_victoire()
+            if not self.partie_terminee:
+                self.joueur_actuel = self.joueur2 if joueur == self.joueur1 else self.joueur1
+            return True
+        return False
+    
+    def _verifier_victoire(self):
+        # Vérification horizontale, verticale et diagonale
+        for i in range(3):
+            if (self.grille[i][0] == self.grille[i][1] == self.grille[i][2] and self.grille[i][0] is not None):
+                self.partie_terminee = True
+                self.vainqueur = self.joueur1 if self.grille[i][0] == (self.joueur1.nom if self.joueur1 else None) else self.joueur2
+                return
+            if (self.grille[0][i] == self.grille[1][i] == self.grille[2][i] and self.grille[0][i] is not None):
+                self.partie_terminee = True
+                self.vainqueur = self.joueur1 if self.grille[0][i] == (self.joueur1.nom if self.joueur1 else None) else self.joueur2
+                return
+        
+        # Diagonales
+        if (self.grille[0][0] == self.grille[1][1] == self.grille[2][2] and self.grille[0][0] is not None):
+            self.partie_terminee = True
+            self.vainqueur = self.joueur1 if self.grille[0][0] == (self.joueur1.nom if self.joueur1 else None) else self.joueur2
+            return
+        if (self.grille[0][2] == self.grille[1][1] == self.grille[2][0] and self.grille[0][2] is not None):
+            self.partie_terminee = True
+            self.vainqueur = self.joueur1 if self.grille[0][2] == (self.joueur1.nom if self.joueur1 else None) else self.joueur2
+            return
+        
+        # Vérifier égalité
+        if all(self.grille[i][j] is not None for i in range(3) for j in range(3)):
+            self.partie_terminee = True
+            self.vainqueur = None
+    
+    def to_dict(self):
+        return {
+            'grille': self.grille,
+            'partie_terminee': self.partie_terminee,
+            'vainqueur': self.vainqueur.nom if self.vainqueur else None,
+            'joueur_actuel': self.joueur_actuel.nom if self.joueur_actuel else None,
+            'joueur1': self.joueur1.nom if self.joueur1 else None,
+            'joueur2': self.joueur2.nom if self.joueur2 else None
+        }
+
+class AIPlayer:
+    @staticmethod
+    def jouer_coup_optimal(grille: List[List[Optional[str]]], joueur_nom: str, difficulte: str = 'medium'):
+        # IA simple pour Vercel
+        for i in range(3):
+            for j in range(3):
+                if grille[i][j] is None:
+                    return i, j
+        return None, None
 
 app = Flask(__name__)
 
@@ -186,6 +183,9 @@ def make_move():
             return jsonify({'success': False, 'error': 'Position invalide'}), 400
         
         joueur = game_model.joueur_actuel
+        if not joueur:
+            return jsonify({'success': False, 'error': 'Joueur actuel non défini'}), 400
+            
         success = game_model.jouer_coup(ligne, colonne, joueur)
         
         if not success:
@@ -214,6 +214,9 @@ def ai_move():
         data = request.get_json()
         difficulte = data.get('difficulte', 'medium')
         
+        if not game_model.joueur_actuel:
+            return jsonify({'success': False, 'error': 'Joueur actuel non défini'}), 400
+        
         ligne, colonne = AIPlayer.jouer_coup_optimal(
             game_model.grille, 
             game_model.joueur_actuel.nom,
@@ -222,7 +225,8 @@ def ai_move():
         
         if ligne is not None and colonne is not None:
             joueur = game_model.joueur_actuel
-            game_model.jouer_coup(ligne, colonne, joueur)
+            if joueur:
+                game_model.jouer_coup(ligne, colonne, joueur)
             
             return jsonify({
                 'success': True,

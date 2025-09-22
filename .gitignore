@@ -105,3 +105,11 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+# Fichiers de backup
+*.backup
+*.bak
+*.orig
+
+# Vercel
+.vercel

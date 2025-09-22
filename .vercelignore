@@ -1,0 +1,11 @@
+# Fichiers à ignorer lors du déploiement Vercel
+*.md
+.git/
+.github/
+node_modules/
+*.log
+.env*
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

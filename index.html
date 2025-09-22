@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Morpion Otaku Battle - Jeu Anime Gratuit</title>
+    <meta name="description" content="Jeu de morpion anime gratuit avec 24+ personnages, IA avancée, effets visuels et système d'évolution. Jouez maintenant!">
+    <meta http-equiv="refresh" content="0; url=./view/index.html">
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            text-align: center; 
+            padding: 50px;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        .btn:hover { 
+            transform: translateY(-3px) scale(1.05); 
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        .features {
+            margin: 30px 0;
+            text-align: left;
+            display: inline-block;
+        }
+        .feature {
+            margin: 10px 0;
+            padding: 5px 0;
+        }
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            background: rgba(0,255,0,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(0,255,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎮</div>
+        <h1>Morpion Otaku Battle</h1>
+        <div class="status">
+            ✅ Déployé avec succès sur Vercel !
+        </div>
+        
+        <div class="features">
+            <div class="feature">🤖 IA Avancée avec plusieurs niveaux</div>
+            <div class="feature">🎨 24+ Personnages d'anime populaires</div>
+            <div class="feature">⚡ Effets visuels et animations</div>
+            <div class="feature">🏆 Système d'évolution et progression</div>
+            <div class="feature">🎵 Sons et musiques d'ambiance</div>
+            <div class="feature">📱 Design responsive (mobile + desktop)</div>
+        </div>
+
+        <div class="spinner"></div>
+        <p>Redirection automatique vers le jeu...</p>
+        
+        <a href="./view/index.html" class="btn">🚀 Jouer Maintenant</a>
+        <br><br>
+        
+        <p><small>
+            🌟 Personnages disponibles : Goku, Luffy, Naruto, Ichigo, Gojo, Deku, Asta, Saitama, Kaiju No.8<br>
+            ⚔️ Modes : Joueur vs Joueur, Joueur vs IA, Spectateur<br>
+            🎯 Difficultés IA : Facile, Moyen, Difficile, Expert
+        </small></p>
+    </div>
+
+    <script>
+        // Redirection automatique après 3 secondes
+        setTimeout(function() {
+            window.location.href = './view/index.html';
+        }, 3000);
+        
+        // Vérification que les assets sont disponibles
+        setTimeout(function() {
+            fetch('./static/styles.css')
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ Assets statiques chargés correctement');
+                    }
+                })
+                .catch(error => {
+                    console.log('⚠️ Vérification des assets:', error);
+                });
+        }, 1000);
+    </script>
+</body>
+</html>

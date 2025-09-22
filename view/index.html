@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morpion Otaku Battle</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel hidden">
+            <h3 data-i18n="settings">Paramètres</h3>
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <label>Thème</label>
+                    <select id="theme-select">
+                        <option value="default">Classique</option>
+                        <option value="dark">Sombre</option>
+                        <option value="ocean">Océan</option>
+                        <option value="fire">Feu</option>
+                        <option value="nature">Nature</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Langue</label>
+                    <select id="language-select">
+                        <option value="fr">Français</option>
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Sons</label>
+                    <button id="toggle-sound" class="toggle-btn">ON</button>
+                </div>
+                <div class="setting-group">
+                    <label>Musique</label>
+                    <button id="toggle-music" class="toggle-btn">ON</button>
+                </div>
+            </div>
+            
+            <!-- Advanced Features Section -->
+            <div class="advanced-features-section">
+                <h4>Fonctionnalités Avancées</h4>
+                <div class="advanced-features-grid">
+                    <button onclick="togglePhotoMode()" class="feature-btn">📸 Mode Photo</button>
+                    <button onclick="enableAdvancedShaders()" class="feature-btn">🌈 Shaders Avancés</button>
+                    <button onclick="enableTeamMode()" class="feature-btn">👥 Mode Équipe</button>
+                    <button onclick="enableMLAI()" class="feature-btn">🤖 IA ML</button>
+                    <button onclick="enablePrediction()" class="feature-btn">🧩 Prédiction</button>
+                    <button onclick="openSkinsManager()" class="feature-btn">🎭 Skins</button>
+                </div>
+            </div>
+            <button onclick="closeSettings()">Fermer</button>
+        </div>
+        
+        <!-- Stats Panel -->
+        <div id="stats-panel" class="stats-panel hidden">
+            <h3>Statistiques</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="total-games">0</span>
+                    <span class="stat-label">Parties jouées</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="win-rate">0%</span>
+                    <span class="stat-label">Taux de victoire</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="win-streak">0</span>
+                    <span class="stat-label">Série actuelle</span>
+                </div>
+            </div>
+            <button onclick="closeStats()">Fermer</button>
+        </div>
+        
+        <!-- Header with navigation -->
+        <header class="game-header">
+            <h1 data-i18n="game_title">Morpion Otaku Battle</h1>
+            <nav class="game-nav">
+                <button onclick="showSettings()" class="nav-btn">⚙️</button>
+                <button onclick="showStats()" class="nav-btn">📊</button>
+                <button onclick="showAchievements()" class="nav-btn">🏆</button>
+                <button onclick="togglePhotoMode()" class="nav-btn">📸</button>
+                <button onclick="window.skinsManager?.openSkinSelector?.() || alert('Skins - En développement!')" class="nav-btn">🎭</button>
+                <button onclick="startTutorial()" class="nav-btn">🎯</button>
+                <button onclick="toggleMultiplayer()" class="nav-btn">🌐</button>
+            </nav>
+        </header>
+
+        <!-- Character selection -->
+        <div id="selection-personnages" class="section">
+            <h2>Choisissez vos personnages</h2>
+            
+            <!-- Mode selection -->
+            <div class="mode-selection">
+                <h3>Mode de jeu</h3>
+                <div class="mode-buttons">
+                    <button type="button" id="mode-pvp" class="mode-btn active" onclick="selectMode('pvp')">Joueur vs Joueur</button>
+                    <button type="button" id="mode-ai" class="mode-btn" onclick="selectMode('ai')">Joueur vs IA</button>
+                </div>
+            </div>
+            
+            <!-- AI difficulty selection -->
+            <div id="ai-difficulty-selection" class="ai-difficulty hidden">
+                <h4>Difficulté de l'IA</h4>
+                <select id="ai-difficulty">
+                    <option value="easy">Facile</option>
+                    <option value="medium" selected>Moyen</option>
+                    <option value="hard">Difficile</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </div>
+            <div class="selection-container">
+                <div class="joueur-selection">
+                    <h3>Joueur 1</h3>
+                    <select id="perso1">
+                        <option value="">Sélectionnez un personnage</option>
+                        <option value="asta">Asta</option>
+                        <option value="deku">Deku</option>
+                        <option value="gojo">Gojo</option>
+                        <option value="goku">Goku</option>
+                        <option value="ichigo">Ichigo</option>
+                        <option value="kaijuu">Kaiju No. 8</option>
+                        <option value="luffy">Luffy</option>
+                        <option value="naruto">Naruto</option>
+                        <option value="saitama">Saitama</option>
+                    </select>
+                    <div id="preview1" class="character-preview"></div>
+                </div>
+
+                <div class="joueur-selection">
+                    <h3 id="player2-label">Joueur 2</h3>
+                    <select id="perso2">
+                        <option value="">Sélectionnez un personnage</option>
+                        <option value="asta">Asta</option>
+                        <option value="deku">Deku</option>
+                        <option value="gojo">Gojo</option>
+                        <option value="goku">Goku</option>
+                        <option value="ichigo">Ichigo</option>
+                        <option value="kaijuu">Kaiju No. 8</option>
+                        <option value="luffy">Luffy</option>
+                        <option value="naruto">Naruto</option>
+                        <option value="saitama">Saitama</option>
+                    </select>
+                    <div id="preview2" class="character-preview"></div>
+                </div>
+            </div>
+            <button type="button" id="commencer" onclick="commencerPartie()">Commencer le combat !</button>
+        </div>
+
+        <!-- Game area -->
+        <div id="zone-jeu" class="section hidden">
+            <div class="game-info">
+                <div class="player-info">
+                    <div id="info-joueur1" class="player-card">
+                        <img id="img-joueur1" class="character-img" alt="Personnage Joueur 1" src="">
+                        <div class="health-bar">
+                            <div id="health-joueur1" class="health-fill"></div>
+                        </div>
+                        <span id="name-joueur1"></span>
+                    </div>
+                    <div id="tour-indicateur">Tour de <span id="joueur-actuel"></span></div>
+                    <div id="combat-log" class="combat-log">
+                        <h4>Historique du combat</h4>
+                        <div id="log-messages"></div>
+                    </div>
+                    <div id="info-joueur2" class="player-card">
+                        <img id="img-joueur2" class="character-img" alt="Personnage Joueur 2" src="">
+                        <div class="health-bar">
+                            <div id="health-joueur2" class="health-fill"></div>
+                        </div>
+                        <span id="name-joueur2"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grille-morpion">
+                <button type="button" class="cell" data-ligne="0" data-colonne="0" onclick="jouerCoup(0, 0)">1</button>
+                <button type="button" class="cell" data-ligne="0" data-colonne="1" onclick="jouerCoup(0, 1)">2</button>
+                <button type="button" class="cell" data-ligne="0" data-colonne="2" onclick="jouerCoup(0, 2)">3</button>
+                <button type="button" class="cell" data-ligne="1" data-colonne="0" onclick="jouerCoup(1, 0)">4</button>
+                <button type="button" class="cell" data-ligne="1" data-colonne="1" onclick="jouerCoup(1, 1)">5</button>
+                <button type="button" class="cell" data-ligne="1" data-colonne="2" onclick="jouerCoup(1, 2)">6</button>
+                <button type="button" class="cell" data-ligne="2" data-colonne="0" onclick="jouerCoup(2, 0)">7</button>
+                <button type="button" class="cell" data-ligne="2" data-colonne="1" onclick="jouerCoup(2, 1)">8</button>
+                <button type="button" class="cell" data-ligne="2" data-colonne="2" onclick="jouerCoup(2, 2)">9</button>
+            </div>
+
+            <div class="game-controls">
+                <button type="button" onclick="resetPartie()">Recommencer</button>
+                <button type="button" onclick="retourSelection()">Nouvelle partie</button>
+            </div>
+        </div>
+
+        <!-- End game area -->
+        <div id="fin-partie" class="section hidden">
+            <h2 id="message-fin">Fin de partie</h2>
+            <div id="vainqueur-info">
+                <img id="img-vainqueur" class="character-img-large" alt="Vainqueur" src="">
+                <h3 id="nom-vainqueur">Vainqueur</h3>
+            </div>
+            <div class="end-game-controls">
+                <button type="button" onclick="resetPartie()">Rejouer</button>
+                <button type="button" onclick="retourSelection()">Nouvelle partie</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../controller/audio_manager.js"></script>
+    <script src="../controller/features_manager.js"></script>
+    <script src="../controller/advanced_features.js"></script>
+    <script src="../controller/visual_effects.js"></script>
+    <script src="../controller/advanced_ai.js"></script>
+    <script src="../controller/skins_and_final_features.js"></script>
+    <script src="../controller/game_controller.js"></script>
+</body>
+
+</html>
